@@ -16,11 +16,6 @@ const Student = [
 
 ];
 
-
-
-
-
-
 app.get("/", (req, res) => {
     return res.send("<h1>wellcome to home page</h1>")
 })
