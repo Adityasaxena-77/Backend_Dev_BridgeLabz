@@ -1,99 +1,20 @@
-const fs = require("fs").promises;
-const express = require("express");
-const app = express();
+const express=require("express");
+const app=express();
+const fs=require("fs");
 
-const PORT = 8000;
+app.use(express.urlencoded({extended:true}));
+app.post("/student/registration",(req,res)=>{
+  fs.appendFileSync("./students.json",JSON.stringify(req.body)+ "\n");
+    const {name, branch}=req.body;
 
-
-app.use(express.json());
-
-const loggerMiddleware = async (req, res, next) => {
-  const log = `Time: ${new Date().toLocaleString()} | Method: ${req.method} | URL: ${req.url}\n`;
-
-  try {
-    await fs.appendFile("./log.txt", log);
-  } catch (err) {
-    console.log("Logger error:", err.message);
-  }
-
-  next();
-};
-
-app.use(loggerMiddleware);
+    console.log("Student Registered");
+    console.log("Name", name);
+    console.log("Branch", branch);
+    res.send("Registered Successfully");
 
 
-const readStudentsFromFile = async () => {
-  const data = await fs.readFile("./students.json", "utf-8");
-  return JSON.parse(data || "[]");
-};
-
-const writeStudentsToFile = async (records) => {
-  await fs.writeFile("./students.json", JSON.stringify(records, null, 2));
-};
-
-
-app.get("/students", async (req, res) => {
-  try {
-    const students = await readStudentsFromFile();
-    return res.status(200).json(students);
-  } catch (err) {
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
 });
 
-app.put("/students/:id", async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-
-    if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(400).json({ message: "Empty body not allowed" });
-    }
-
-    const students = await readStudentsFromFile();
-
-    const index = students.findIndex((s) => s.id === userId);
-    if (index === -1) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    students[index] = { ...students[index], ...req.body };
-
-    await writeStudentsToFile(students);
-
-    return res.status(200).json({
-      message: "Student updated successfully",
-      student: students[index],
-    });
-  } catch (err) {
-    return res.status(500).json({ message: "Internal Server Error", error: err.message });
-  }
-});
-
-app.delete("/students/:id", async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-
-    const students = await readStudentsFromFile();
-
-    const index = students.findIndex((s) => s.id === userId);
-    if (index === -1) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    const deletedStudent = students.splice(index, 1)[0];
-
-    await writeStudentsToFile(students);
-
-    return res.status(200).json({
-      message: "Student deleted successfully",
-      deletedStudent,
-    });
-  } catch (err) {
-    return res.status(500).json({ message: "Internal Server Error", error: err.message });
-  }
-});
-
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(3000,()=>{
+    console.log("Server is running on 3000");
+})
